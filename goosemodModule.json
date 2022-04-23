@@ -1,0 +1,12 @@
+{
+  "main": "index.js",
+
+  "name": "ID In Author",
+  "description": "Adds user ID to message's author",
+
+  "tags": ["ui"],
+
+  "authors": ["506482395269169153"],
+
+  "version": "1.0.0"
+}
