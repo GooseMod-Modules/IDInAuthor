@@ -1,27 +1,52 @@
-import Plugin from '@goosemod/plugin';
-
 import { username } from '@goosemod/patcher';
 import { React } from '@goosemod/webpack/common';
 
+let before = false;
+let unpatch;
 
-class IDInAuthor extends Plugin {
-    onImport() {
-      this.enqueueUnpatch(username.patch(({ message }) =>
-        React.createElement('span', {
-          style: {
-            padding: '3px',
-            borderRadius: '4px',
-            fontSize: '0.8em',
-            color: 'var(--text-muted)',
-            background: 'var(--background-floating)',
-            marginRight: '2px'
-          }
-        }, message.author.id),
-        { before: true }
-      ));
-    }
+const createPatch = () => {
+  if (unpatch) unpatch();
 
-    onRemove() { }
+  unpatch = username.patch(({ message }) =>
+    React.createElement('span', {
+      style: {
+        padding: '3px',
+        borderRadius: '4px',
+        fontSize: '0.8em',
+        color: 'var(--text-muted)',
+        background: 'var(--background-floating)',
+        marginRight: '2px'
+      }
+    }, message.author.id),
+
+    { before }
+  );
 };
 
-export default new IDInAuthor();
+export default { goosemodHandlers: {
+  onImport() {
+    createPatch();
+
+    goosemodScope.settings.createItem('ID In Author', ['',
+      {
+        type: 'toggle',
+        text: 'Before',
+        subtext: 'Add ID before (left) or after (right)',
+        onToggle: (c) => {
+          before = c;
+          createPatch();
+        },
+        isToggled: () => before
+      }
+    ])
+  },
+
+  onRemove() {
+    unpatch();
+  },
+
+  getSettings: () => [ before ],
+  loadSettings: ([ _before ]) => {
+    before = _before ?? false;
+  }
+}};
